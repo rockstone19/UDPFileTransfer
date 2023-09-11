@@ -1,0 +1,42 @@
+#Author: Peter Gutstein
+version: "3"
+
+services:
+  ingress:
+    network_mode: "host"
+    build:
+      dockerfile:
+        ingress/Dockerfile
+
+  client:
+    network_mode: "host"
+    build:
+      dockerfile:
+        client/Dockerfile
+    command: python ./client.py
+    depends_on:
+      - ingress
+      - worker
+    deploy:
+      mode: replicated
+      replicas: 2
+    volumes:
+      - ./recievedFiles:/recievedFiles
+
+  worker:
+    network_mode: "host"
+    build:
+      dockerfile:
+        worker/Dockerfile
+    command: python ./worker.py
+    depends_on:
+      - ingress
+    deploy:
+      mode: replicated
+      replicas: 2
+
+  tcpdump:
+    image: kaazing/tcpdump
+    network_mode: "host"
+    volumes:
+      - ./tcpdump:/tcpdump
